@@ -1,0 +1,41 @@
+---
+title: "Bangkok air quality code"
+author: "Rahima Baboo"
+date: "19/02/2025"
+format: html
+editor: source
+---
+
+##Load data
+
+system("git status")
+
+library(knitr)
+
+```{r}
+/BangkokAirQuality_repo 
+├── Bangkok_Air_Quality_code.qmd
+├── Data    
+    ├──bangkok-air-quality.csv
+├── Code
+```
+
+
+##calling libraries
+library(tidyverse)
+library(readr)
+
+#Reading the data
+
+```{r}
+library(readr)
+
+getwd()
+air_data <- read_csv("Data/bangkok-air-quality.csv")
+
+head(air_data)
+```
+
+
+
+
