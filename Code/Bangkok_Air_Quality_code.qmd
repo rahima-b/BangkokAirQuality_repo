@@ -20,22 +20,15 @@ library(knitr)
 ├── Code
 ```
 
-
+---
 ##calling libraries
 library(tidyverse)
 library(readr)
 
 #Reading the data
+#I imported the csv style from the folder "Data"
 
-```{r}
-library(readr)
-
-getwd()
-air_data <- read_csv("Data/bangkok-air-quality.csv")
-
-head(air_data)
-```
-
+---
 
 
 
