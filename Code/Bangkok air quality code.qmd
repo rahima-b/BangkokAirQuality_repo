@@ -4,35 +4,42 @@ author: "Rahima Baboo"
 format: html
 editor: source
 ---
+Setting up my working directory and checking my Git repository status
 
 getwd()
+
 setwd("C:/Users/Rahima/OneDrive - University of Cape Town/Documents/Rahima postgrad/GIT repos/BangkokAirQuality_repo")
 
 system("git status")
 
-#Calling libraries
+#Calling libraries 
 
-library(tidyverse)
-library(readr)
-library(readxl)
-library(dplyr)
-library(tidyr)
-library(ggplot2)
+**Note:** Remember to install and load the necessary packages
+
+library(tidyverse) 
+library(readr) 
+library(readxl) 
+library(dplyr) 
+library(tidyr) 
+library(ggplot2) 
 library(lubridate)
 
-#Read data
-data <- read_delim("Data/bangkok-air-quality.csv", delim = ";") %>%
-  select(-last_col())
+#Read data 
+
+The last column of the data file had no data so I removed it. I tidied the data into a table format using the code delim = ";" as the data were seperated by semicolons
+
+data <- read_delim("Data/RAW_DATA_bangkok-air-quality.csv", delim = ";") %>% select(-last_col())
 
 head(data)
-summary(data)
-names(data)
-typeof(data)
+
 str(data)
+
 
 #Getting things tidy
 
-##Changing variables
+##Changing variables 
+
+In this set of code I restructure the column titled "NO2" as there was a space in the column title and the values were not numeric.
 
 names(data) <- trimws(names(data))
 
@@ -40,35 +47,36 @@ str(data$NO2)
 
 data$NO2 <- as.numeric(data$ NO2)
 
-##Removing columns and NA's
+##Removing columns and NA's 
 
-:::{.callout-note}
-I am removing the columns: "PM10", "O3", and "SO2". I will only be comparing and analysing PM25 and NO2 as these are the harmful pollutants that are predominantly released from biomass burning.
-:::
+I am removing the columns: "PM10", "O3", and "SO2". This study will only be comparing and analysing PM25 and NO2 as these are the harmful pollutants that are predominantly released from biomass burning. I have also used drop_na to remove the gaps in the data for PM2.5 and NO2
 
-df <- data %>%
-  select(-c(6, 7, 9)) %>%  
-  drop_na("PM25", "NO2")
+df <- data %>% select(-c(6, 7, 9)) %>%
+ drop_na("PM25", "NO2")
 
 head(df)
-print (df)
-typeof(df)
+
 str(df)
 
 ##Convert wide format data to long format
 
-df <- read_csv(df)%>%
-  pivot_longer(cols = c("PM25", "NO2"),
-               names_to = "variable", values_to = "value")
-               
-##Date column to date type
+df <- read_csv(df)%>% pivot_longer(cols = c("PM25", "NO2"), names_to = "variable", values_to = "value")
+
+##Date column to date type 
+
+Converting the date column to date objects instead of characters
+
 df$Date <- as.Date(df$Date)
 
-##Extract year and month
+##Extract year and month 
+
+Creating new columns for year and month
+
 df$Year <- factor(year(df$Date))
 
 df$Month <- factor(month(df$Date, label = TRUE, abbr = TRUE), levels = month.abb)
-               
+
+
 #Generating plots
 
 ##Boxplots for PM2.5
@@ -77,7 +85,7 @@ df$Month <- factor(month(df$Date, label = TRUE, abbr = TRUE), levels = month.abb
 
 library(ggplot2)
 
-ggplot(data = df, aes(x = Month, y = PM25, fill = Month)) +
+boxplot.PM <- ggplot(data = df, aes(x = Month, y = PM25, fill = Month)) +
   geom_boxplot(color = "black", fill = "palegreen3") +  
   labs(x = "Month", y = "PM2.5 Concentration (µg/m³)", 
        title = "PM2.5 Concentration by Month (2021-2023)") +
@@ -90,6 +98,11 @@ ggplot(data = df, aes(x = Month, y = PM25, fill = Month)) +
         axis.text.x = element_text(size = 10, angle = 45, hjust = 1),  # Rotate x-axis labels
         axis.text.y = element_text(size = 10)) +
   guides(fill = "none")  # Remove legend
+
+ggsave("C:/Users/Rahima/OneDrive - University of Cape Town/Documents/Rahima postgrad/GIT repos/BangkokAirQuality_repo/Figures/PM2.5boxplot.png", 
+       plot = boxplot.PM, width = 8, height = 6, dpi = 300)
+
+print(boxplot.PM)
 ```
 
 ##Boxplots for NO2
@@ -98,7 +111,7 @@ ggplot(data = df, aes(x = Month, y = PM25, fill = Month)) +
 
 library(ggplot2)
 
-ggplot(data = df, aes(x = Month, y = NO2, fill = Month)) +
+boxplot.NO <- ggplot(data = df, aes(x = Month, y = NO2, fill = Month)) +
   geom_boxplot(color = "black", fill = "palegreen") +  
   labs(x = "Month", y = expression("NO"[2]~" Concentration (mol/m"^2*")"), 
        title = expression("NO"[2]~" Concentration by Month (2021-2023) in Bangkok, Thailand")) +
@@ -111,12 +124,19 @@ ggplot(data = df, aes(x = Month, y = NO2, fill = Month)) +
         axis.text.x = element_text(size = 10, angle = 45, hjust = 1),  
         axis.text.y = element_text(size = 9)) +
   guides(fill = "none")  # Remove legend
+
+ggsave("C:/Users/Rahima/OneDrive - University of Cape Town/Documents/Rahima postgrad/GIT repos/BangkokAirQuality_repo/Figures/NO2boxplot.png", 
+       plot = boxplot.PM, width = 8, height = 6, dpi = 300)
+
+print(boxplot.NO)
 ```
 
-#Run tests
+#Run ANOVA tests 
+
+I did an ANOVA test to determine if there were significant differences in the concentrations of PM2.5 and NO2 across months.
 
 ##PM2.5
-###ANOVA
+
 ```{r}
 #one-way ANOVA
 anova.PM <- aov(df$PM25 ~ df$Month)
@@ -124,18 +144,12 @@ anova.PM <- aov(df$PM25 ~ df$Month)
 #ANOVA summary
 summary(anova.PM)
 
-```
-
-###Tukey's HSD test
-```{r}
-tukey_test.PM <- TukeyHSD(anova.PM)
-
-#Tukey's HSD test results
-print(tukey_test.PM)
+tidy(anova.PM)
 
 ```
+
 ##NO2
-###ANOVA
+
 ```{r}
 #one-way ANOVA
 anova.NO <- aov(df$NO2 ~ df$Month)
@@ -143,12 +157,6 @@ anova.NO <- aov(df$NO2 ~ df$Month)
 #ANOVA summary
 summary(anova.NO)
 
-```
-###Tukey's HSD test
-```{r}
-tukey_test.NO <- TukeyHSD(anova.NO)
-
-#Tukey's HSD test results
-print(tukey_test.NO)
+tidy(anova.NO)
 
 ```
