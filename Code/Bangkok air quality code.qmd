@@ -28,12 +28,13 @@ library(lubridate)
 
 The last column of the data file had no data so I removed it. I tidied the data into a table format using the code delim = ";" as the data were seperated by semicolons
 
+```{r}
 data <- read_delim("Data/RAW_DATA_bangkok-air-quality.csv", delim = ";") %>% select(-last_col())
 
 head(data)
 
 str(data)
-
+```
 
 #Getting things tidy
 
@@ -41,41 +42,46 @@ str(data)
 
 In this set of code I restructure the column titled "NO2" as there was a space in the column title and the values were not numeric.
 
+```{r}
 names(data) <- trimws(names(data))
 
 str(data$NO2)
 
 data$NO2 <- as.numeric(data$ NO2)
+```
 
 ##Removing columns and NA's 
 
 I am removing the columns: "PM10", "O3", and "SO2". This study will only be comparing and analysing PM25 and NO2 as these are the harmful pollutants that are predominantly released from biomass burning. I have also used drop_na to remove the gaps in the data for PM2.5 and NO2
 
+```{r}
 df <- data %>% select(-c(6, 7, 9)) %>%
  drop_na("PM25", "NO2")
 
 head(df)
 
 str(df)
+```
 
 ##Convert wide format data to long format
 
+```{r}
 df <- read_csv(df)%>% pivot_longer(cols = c("PM25", "NO2"), names_to = "variable", values_to = "value")
+```
 
-##Date column to date type 
+##Date column to date type and Extract year and month
 
-Converting the date column to date objects instead of characters
+Converting the date column to date objects instead of characters and Creating new columns for year and month
+
+```{r}
 
 df$Date <- as.Date(df$Date)
-
-##Extract year and month 
-
-Creating new columns for year and month
 
 df$Year <- factor(year(df$Date))
 
 df$Month <- factor(month(df$Date, label = TRUE, abbr = TRUE), levels = month.abb)
 
+```
 
 #Generating plots
 
