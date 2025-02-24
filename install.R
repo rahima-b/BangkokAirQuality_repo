@@ -1,0 +1,7 @@
+install.packages("tidyverse") 
+install.packages("readr") 
+install.packages("readxl") 
+install.packages("dplyr") 
+install.packages("tidyr") 
+install.packages("ggplot2") 
+install.packages("lubridate")
